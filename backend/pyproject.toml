@@ -1,0 +1,50 @@
+[project]
+name = "wind-forecast-monitor"
+version = "0.1.0"
+description = "Wind Forecast Monitor for UK day-ahead power buyers"
+readme = "../README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "django>=5.1.0,<6.2.0",
+    "django-ninja>=1.3.0,<2.0.0",
+    "pydantic>=2.7.0,<3.0.0",
+    "pydantic-settings>=2.2.0,<3.0.0",
+    "psycopg[binary]>=3.1.18",
+    "whitenoise>=6.6.0",
+    "httpx>=0.27.0",
+    "numpy>=1.26.0",
+    "python-dotenv>=1.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0",
+    "pytest-django>=4.8.0",
+    "respx>=0.21.0",
+    "ruff>=0.4.0",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes
+    "I",   # isort
+    "B",   # flake8-bugbear
+    "C4",  # flake8-comprehensions
+    "UP",  # pyupgrade
+]
+ignore = [
+    "E501",  # line length handled by formatter
+    "B008",  # function calls in argument defaults (standard idiom in Django Ninja & FastAPI)
+]
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "config.settings"
+python_files = ["test_*.py", "*_test.py"]
+testpaths = ["tests"]
+addopts = "-ra -q"

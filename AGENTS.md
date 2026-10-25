@@ -42,6 +42,9 @@ The project documentation lives in `docs/implementation/` and represents the sin
 4. **Always Update `docs/implementation/FOLDER_STRUCTURE.md` & `docs/implementation/PROJECT_STANDARDS.md`**:
    - Keep directory trees, file responsibility tables, and standard checklists synchronized with any changes to the codebase.
 
+5. **Never Commit or Push Challenge Brief**:
+   - The challenge brief document (`REint Full Stack SWE challenge v4 Shared.docx` / `*.docx`) must NEVER be tracked, committed, or pushed to preserve full repository anonymity and prevent prompt leakage.
+
 ---
 
 ## 3. Key Architecture & Engineering Standards

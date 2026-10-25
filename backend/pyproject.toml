@@ -2,7 +2,7 @@
 name = "wind-forecast-monitor"
 version = "0.1.0"
 description = "Wind Forecast Monitor for UK day-ahead power buyers"
-readme = "../README.md"
+readme = {text = "Wind Forecast Monitor backend package.", content-type = "text/markdown"}
 requires-python = ">=3.12"
 dependencies = [
     "django>=5.1.0,<6.2.0",
@@ -48,3 +48,6 @@ DJANGO_SETTINGS_MODULE = "config.settings"
 python_files = ["test_*.py", "*_test.py"]
 testpaths = ["tests"]
 addopts = "-ra -q"
+
+[tool.setuptools.packages.find]
+include = ["config*", "core*", "wind*"]

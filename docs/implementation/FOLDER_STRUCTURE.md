@@ -74,43 +74,43 @@
 │           └── elexon_fuelhh_sample.json       # P3-T02
 └── frontend/
     ├── package.json                            # P1-T04
-    ├── tsconfig.json                           # P1-T04
-    ├── vite.config.ts                          # P1-T04 (dev proxy, Vitest config)
+    ├── vite.config.js                          # P1-T04 (dev proxy, Vitest config)
     ├── eslint.config.js                        # P1-T04
     ├── .prettierrc.json                        # P1-T04
     ├── index.html                              # P1-T04
     ├── .env.example                            # P1-T05
     └── src/
-        ├── main.tsx                            # P1-T04
-        ├── App.tsx                             # P1-T04, P6-T02
-        ├── config.ts                           # P1-T05
-        ├── config.test.ts                      # P1-T05
+        ├── main.jsx                            # P1-T04
+        ├── App.jsx                             # P1-T04, P6-T02
+        ├── index.css                           # P1-T04 (design system tokens & styles)
+        ├── config.js                           # P1-T05
+        ├── config.test.js                      # P1-T05
         ├── api/
-        │   ├── client.ts                       # P6-T01
-        │   ├── client.test.ts                  # P6-T01
-        │   ├── types.ts                        # P6-T01
-        │   └── hooks.ts                        # P6-T01
+        │   ├── client.js                       # P6-T01
+        │   ├── client.test.js                  # P6-T01
+        │   ├── types.js                        # P6-T01
+        │   └── hooks.js                        # P6-T01
         ├── components/
-        │   ├── Layout.tsx                      # P6-T02
-        │   ├── Layout.test.tsx                 # P6-T02
-        │   └── QueryState.tsx                  # P6-T02
+        │   ├── Layout.jsx                      # P6-T02
+        │   ├── Layout.test.jsx                 # P6-T02
+        │   └── QueryState.jsx                  # P6-T02
         ├── features/
         │   ├── forecast/
-        │   │   ├── ForecastPage.tsx            # P6-T03
-        │   │   ├── ForecastPage.test.tsx       # P6-T05
-        │   │   ├── DecisionControls.tsx        # P6-T03  ⚠ D05
-        │   │   └── ForecastChart.tsx           # P6-T03  ⚠ D09
+        │   │   ├── ForecastPage.jsx            # P6-T03
+        │   │   ├── ForecastPage.test.jsx       # P6-T05
+        │   │   ├── DecisionControls.jsx        # P6-T03  ⚠ D05
+        │   │   └── ForecastChart.jsx           # P6-T03  ⚠ D09
         │   └── accuracy/
-        │       ├── AccuracyPage.tsx            # P6-T04
-        │       ├── AccuracyPage.test.tsx       # P6-T05
-        │       ├── MetricCards.tsx             # P6-T04  ⚠ D10
-        │       ├── HorizonChart.tsx            # P6-T04  ⚠ D09
-        │       └── DailyErrorChart.tsx         # P6-T04  ⚠ D09
+        │       ├── AccuracyPage.jsx            # P6-T04
+        │       ├── AccuracyPage.test.jsx       # P6-T05
+        │       ├── MetricCards.jsx             # P6-T04  ⚠ D10
+        │       ├── HorizonChart.jsx            # P6-T04  ⚠ D09
+        │       └── DailyErrorChart.jsx         # P6-T04  ⚠ D09
         ├── lib/
-        │   ├── format.ts                       # P6-T03
-        │   └── format.test.ts                  # P6-T05
+        │   ├── format.js                       # P6-T03
+        │   └── format.test.js                  # P6-T05
         └── test/
-            └── setup.ts                        # P1-T04, P6-T05
+            └── setup.js                        # P1-T04, P6-T05
 ```
 
 Why one Django domain app (`wind`) and one cross-cutting app (`core`): the product has a single bounded context (wind forecast vs. actual). More apps would add files without adding clarity. If a second energy source is ever added, split `wind` then.

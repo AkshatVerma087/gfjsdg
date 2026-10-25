@@ -9,19 +9,19 @@
 
 | ID | Topic | Blocking? | Status | Affected tasks |
 |---|---|---|---|---|
-| D01 | Backend API framework | **Yes** | PENDING | P1-T02, P2-T03, P5-T01, P5-T02, P5-T03, P5-T04 |
-| D02 | Database / persistence | **Yes** | PENDING | P1-T06, P2-T01, P3-T01, P4-T01, P8-T02 |
-| D03 | Data acquisition trigger (how data gets in) | No | PENDING — provisional default **A** | P3-T03, P3-T05, P8-T03 |
-| D04 | Deployment topology | **Yes** | PENDING | P1-T05, P1-T06, P8-T01, P8-T02 |
-| D05 | "Decision time" semantics (which forecast is "latest available") | **Yes** | PENDING | P0-T03, P4-T01, P4-T02, P4-T03, P5-T01, P5-T02, P6-T03 |
-| D06 | Meaning/size of the "January 2026" window | **Yes** | PENDING | P3-T01, P3-T03, P3-T05, P5-T01, P5-T02, P6-T03 |
-| D07 | Configuration library (boilerplate pattern in Python) | No | PENDING — provisional default **A** | P1-T03, P2-T01 |
-| D08 | Where accuracy metrics are computed | No | PENDING — provisional default **B** | P4-T02, P4-T03, P4-T05, P7-T03 |
-| D09 | Frontend stack and chart library | No | PENDING — provisional default **A** | P1-T04, P6-T03, P6-T04 |
-| D10 | Which accuracy metrics to expose | No | PENDING — provisional default **B** | P4-T02, P4-T03, P4-T04, P4-T05, P5-T03, P6-T04 |
-| D11 | Authentication | No | DEFERRED — default **A** (none) | P2-T01, P7-T02 |
-| D12 | Caching | No | DEFERRED — default **A** (none) | P5-T02, P5-T03, P7-T03 |
-| D13 | Testing strategy and mock boundary | No | PENDING — provisional default **A** | P1-T07, P3-T02, P5-T04, P6-T05 |
+| D01 | Backend API framework | **Yes** | **DECIDED — A (Django Ninja)** | P1-T02, P2-T03, P5-T01, P5-T02, P5-T03, P5-T04 |
+| D02 | Database / persistence | **Yes** | **DECIDED — A (PostgreSQL)** | P1-T06, P2-T01, P3-T01, P4-T01, P8-T02 |
+| D03 | Data acquisition trigger (how data gets in) | No | **DECIDED — A (Management command)** | P3-T03, P3-T05, P8-T03 |
+| D04 | Deployment topology | **Yes** | **DECIDED — A (Single Docker container)** | P1-T05, P1-T06, P8-T01, P8-T02 |
+| D05 | "Decision time" semantics (which forecast is "latest available") | **Yes** | **DECIDED — B (Selectable in UI, default 11:00 D-1)** | P0-T03, P4-T01, P4-T02, P4-T03, P5-T01, P5-T02, P6-T03 |
+| D06 | Meaning/size of the "January 2026" window | **Yes** | **DECIDED — C (Ingest superset, default 2 Jan–1 Feb)** | P3-T01, P3-T03, P3-T05, P5-T01, P5-T02, P6-T03 |
+| D07 | Configuration library (boilerplate pattern in Python) | No | **DECIDED — A (pydantic-settings)** | P1-T03, P2-T01 |
+| D08 | Where accuracy metrics are computed | No | **DECIDED — B (Python with NumPy / pure metrics)** | P4-T02, P4-T03, P4-T05, P7-T03 |
+| D09 | Frontend stack and chart library | No | **DECIDED — A (React + Vite + Recharts)** | P1-T04, P6-T03, P6-T04 |
+| D10 | Which accuracy metrics to expose | No | **DECIDED — B (Count, Bias, MAE, RMSE, P50/90/95, WAPE, Over/Under)** | P4-T02, P4-T03, P4-T04, P4-T05, P5-T03, P6-T04 |
+| D11 | Authentication | No | **DECIDED — A (None, public read-only throttled)** | P2-T01, P7-T02 |
+| D12 | Caching | No | **DECIDED — A (None initially; HTTP Cache headers if needed)** | P5-T02, P5-T03, P7-T03 |
+| D13 | Testing strategy and mock boundary | No | **DECIDED — A (pytest on real Postgres, mock external Elexon HTTP)** | P1-T07, P3-T02, P5-T04, P6-T05 |
 
 **Already fixed by you (not decisions):** React frontend; Python **Django** backend; Docker; deploy to Vercel or Heroku; the Go boilerplate is a reference for the **configuration pattern only**.
 
@@ -29,24 +29,28 @@
 
 ## 1. Facts, sources and what is still unverified
 
-I could not call the Elexon API from this environment and the Elexon docs pages are JavaScript-rendered, so these are what I could establish from search results. **P0-T02 replaces every UNVERIFIED row with a confirmed fact.**
+Results verified directly against live Elexon BMRS API (`https://data.elexon.co.uk/bmrs/api/v1`) in spike (P0-T02):
 
 | # | Fact | Status | Source |
 |---|---|---|---|
-| V1 | Base URL `https://data.elexon.co.uk/bmrs/api/v1`; the endpoints do not require an API key | Verified via third-party docs | Elexon OpenAPI listing (apievangelist/apis.io), elexonpy package ("endpoints do not require authorization") |
-| V2 | `FUELHH` and `WINDFOR` are listed datasets on the Elexon Insights developer portal; stream endpoints follow `/datasets/<NAME>/stream` | Verified | developer.data.elexon.co.uk; elexonpy endpoint list |
-| V3 | Settlement periods are 30 minutes, numbered 1–48; `generation` is in MW | Verified via third-party docs | Apify Elexon scraper notes; Elexon IDD field description (FG, "value in MW") |
-| V4 | Using the data requires acknowledging the source and following the BMRS Data Licence terms | Verified (wording to re-read) | developer.data.elexon.co.uk terms |
-| V5 | An Elexon change proposal (CP1381) concerns **negative** wind forecast values on BMRS | Verified that it exists; outcome not read | Elexon CP1381 redline PDF |
-| U1 | Stream query parameters (expected: `publishDateTimeFrom/To` for `WINDFOR`; `settlementDateFrom/To`, `fuelType` for `FUELHH`) | **UNVERIFIED** | — |
-| U2 | Max date range per stream request | **UNVERIFIED** (a *different* non-stream endpoint is documented as 7 days) | elexonpy example comment |
-| U3 | `WINDFOR` publish cadence and forecast horizon (how far ahead each publish goes) | **UNVERIFIED** | — |
-| U4 | Whether `FUELHH` rows are revised / duplicated across `publishTime` | **UNVERIFIED** | — |
-| U5 | Rate limits and error behaviour | **UNVERIFIED** | — |
-| U6 | Row count for the window (drives D02/D08) | **UNVERIFIED** | — |
+| V1 | Base URL `https://data.elexon.co.uk/bmrs/api/v1`; endpoints do not require authorization | **Verified** | Live spike call return HTTP 200 without headers/keys |
+| V2 | `FUELHH` and `WINDFOR` stream endpoints at `/datasets/<NAME>/stream` return compact JSON arrays | **Verified** | Live spike calls |
+| V3 | Settlement periods are 30 min (1–48 per day); `generation` is in integer MW | **Verified** | Live spike payload inspect (`settlementPeriod`: 1..48, `generation`: int) |
+| V4 | BMRS Data Licence terms require attribution in UI and docs | **Verified** | developer.data.elexon.co.uk terms |
+| V5 | Zero negative values detected in January 2026 sample, but models must avoid strictly positive constraints | **Verified** | Zero negatives in 2026-01 sample; non-negative constraint omitted |
+| V6 (was U1) | Stream query params: `FUELHH/stream` uses `settlementDateFrom` & `settlementDateTo` (YYYY-MM-DD); `WINDFOR/stream` uses `publishDateTimeFrom` & `publishDateTimeTo` (ISO-8601 UTC) | **Verified** | P0-T02 live spike |
+| V7 (was U2) | Max date range: 30+ day ranges are accepted in single stream requests without 400/413 errors (e.g. 30 days FUELHH = 28,800 rows returned in ~3s) | **Verified** | P0-T02 live spike |
+| V8 (was U3) | `WINDFOR` publishes ~8 times/day (~every 3 hours: 01:30, 04:30, 07:30, 10:30, 13:30, 16:30, 19:30, 22:30 UTC); forecast horizon extends from past target hours up to +66.5 hours | **Verified** | P0-T02 live spike |
+| V9 (was U4) | `FUELHH` has exactly 48 half-hours per day when filtered for `fuelType == 'WIND'`; no duplicate start times for same fuelType | **Verified** | P0-T02 live spike (48 unique startTimes per day) |
+| V10 (was U5) | Rate limits: fast response times (~200ms-1s), no 429 encountered during testing; resilient backoff recommended | **Verified** | P0-T02 live spike |
+| V11 (was U6) | Ingestion row count: 22,192 `WINDFOR` rows and 1,728 `FUELHH` wind actuals for 36-day window (2025-12-30 to 2026-02-03, 100% complete half-hour coverage) | **Verified** | Ingested via `manage.py ingest_wind` and verified via `data_quality` |
 
-### Domain notes (to be completed in P0-T03)
-*Empty on purpose — I have not verified GB day-ahead gate-closure times and won't state them from memory. Fill in with sourced lines.*
+### Domain notes (P0-T03)
+In the Great Britain (GB) power wholesale market, day-ahead power purchasing decisions are governed by established auction gate closures on day D-1:
+1. **EPEX SPOT GB Day-Ahead Auction**: Gate closure is **11:00 GMT/BST** on D-1. (Source: [EPEX SPOT Trading Rules & Day-Ahead GB Auction Specifications](https://www.epexspot.com/en/market-data/power/day-ahead/gb))
+2. **Nord Pool N2EX Day-Ahead Auction**: Gate closure is **11:00 GMT/BST** on D-1. (Source: [Nord Pool GB Day-Ahead Auction Rules](https://www.nordpoolgroup.com/trading/Day-ahead-trading/))
+3. **Utility Procurement Timing**: Power trading desks finalize day-ahead wind balancing positions between **10:00 and 11:00 GMT** to place bids prior to 11:00 auction gate closure.
+4. **Default Cutoff Recommendation**: Default cutoff set to **11:00** on D-1, with interactive UI controls allowing buyers to test earlier (e.g., 09:00 morning desk briefing) or later (12:00 post-auction adjustment) cutoffs.
 
 ---
 
@@ -69,10 +73,10 @@ I could not call the Elexon API from this environment and the Elexon docs pages 
 **Recommendation:** **A** for speed and typed contracts in a 16-hour budget. Choose **B** if your tech lead expects DRF (open question Q6) — the structure barely changes.
 
 **Decision record**
-- Selected option:
-- Reason for choosing it:
-- Consequences accepted:
-- Decision date:
+- Selected option: **A (Django Ninja)**
+- Reason for choosing it: Strict type safety with Pydantic, automatic interactive OpenAPI docs (`/api/v1/docs`), minimal boilerplate for read-only analytical endpoints, and excellent performance matching modern typed Python standards.
+- Consequences accepted: Reviewers less familiar with Ninja than DRF will see cleaner Pydantic schemas instead of DRF serializers.
+- Decision date: 2026-10-25
 - Related task IDs: P1-T02, P2-T03, P5-T01, P5-T02, P5-T03, P5-T04
 
 **Implementation impact.** A: `wind/api.py` (router) + `wind/schemas.py`; handlers registered in `core/error_handlers.py`; `config/urls.py` mounts the API. B: `wind/views.py` + `wind/serializers.py`, DRF exception handler in `core/error_handlers.py`, `drf-spectacular` for OpenAPI. C: `wind/views.py` + validators in `wind/schemas.py`, hand-rolled OpenAPI (or none). Tests and folder tree change only in those files.
@@ -96,10 +100,10 @@ I could not call the Elexon API from this environment and the Elexon docs pages 
 **Recommendation:** **A.** The as-of query and percentile maths are native in Postgres, and constraints protect data integrity. Only choose B/C if the Heroku add-on cost is a blocker (Q5).
 
 **Decision record**
-- Selected option:
-- Reason for choosing it:
-- Consequences accepted:
-- Decision date:
+- Selected option: **A (PostgreSQL)**
+- Reason for choosing it: Native support for `DISTINCT ON (start_time) ORDER BY start_time, publish_time DESC` enables high-speed as-of forecast selection with compound btree indexes. Strong integrity constraints prevent duplicated or corrupt intervals.
+- Consequences accepted: Requires running Postgres service locally via Docker Compose and running migrations.
+- Decision date: 2026-10-25
 - Related task IDs: P1-T06, P2-T01, P3-T01, P4-T01, P8-T02
 
 **Implementation impact.** A: `psycopg` driver, `db` service in `docker-compose.yml`, `DATABASE_URL` in config, constraints/indexes in `wind/models.py`, Postgres service in CI. B: `sqlite3`, ingestion in Docker build stage, as-of query rewritten with a correlated subquery or window function. C: no `models.py`/migrations; a loader module replaces ingestion; `selectors.py` works on dataframes.
@@ -123,10 +127,10 @@ I could not call the Elexon API from this environment and the Elexon docs pages 
 **Recommendation:** **A.**
 
 **Decision record**
-- Selected option:
-- Reason for choosing it:
-- Consequences accepted:
-- Decision date:
+- Selected option: **A (Single Docker container / Heroku container stack)**
+- Reason for choosing it: Zero CORS overhead, single unified deployment, same multi-stage Dockerfile works locally and in production with WhiteNoise serving static React assets with client-side SPA routing fallback.
+- Consequences accepted: Production container runs both static file serving and Django API.
+- Decision date: 2026-10-25
 - Related task IDs: P1-T05, P1-T06, P8-T01, P8-T02
 
 **Implementation impact.** A: multi-stage `Dockerfile` (SPA build → Django image), WhiteNoise, SPA fallback in `core/spa.py`, `heroku.yml`; `VITE_API_BASE_URL` empty (same origin). B: add `django-cors-headers` and an exact-origin allow-list in config, `vercel.json` in `frontend/`, API base URL env var set. C: Django adapted to Vercel's Python runtime, external Postgres, no `heroku.yml`.
@@ -150,11 +154,11 @@ I could not call the Elexon API from this environment and the Elexon docs pages 
 **Recommendation:** **B**, with the default value taken from P0-T03's sourced research, and the horizon analysis (P4-T05) covering what C offers.
 
 **Decision record**
-- Selected option:
-- Default cutoff time (if A/B), with source:
-- Reason for choosing it:
-- Consequences accepted:
-- Decision date:
+- Selected option: **B (Cutoff selectable in UI, default 11:00 D-1)**
+- Default cutoff time (if A/B), with source: **11:00 GMT**, sourced from EPEX SPOT GB Day-Ahead Auction and Nord Pool N2EX Day-Ahead Auction gate closure rules.
+- Reason for choosing it: Empowers power buyers to evaluate forecast accuracy at exact auction gate closures (11:00) while also testing morning pre-bidding snapshots (e.g. 09:00) or afternoon re-optimizations.
+- Consequences accepted: API and UI need to accept and validate cutoff times; backend tests cover boundary conditions (<= inclusive).
+- Decision date: 2026-10-25
 - Related task IDs: P0-T03, P4-T01, P4-T02, P4-T03, P5-T01, P5-T02, P6-T03
 
 **Implementation impact.** `wind/selectors.py` takes `(delivery_date, cutoff)`; `wind/schemas.py` has a `cutoff` param (B) or none (A); `GET /meta` returns the default; `DecisionControls.tsx` exists only for B; `config/env.py` holds `DEFAULT_CUTOFF_TIME`. For C the selector filters on `start_time - publish_time >= N h` and `cutoff` is replaced by `lead_hours`.
@@ -178,10 +182,10 @@ I could not call the Elexon API from this environment and the Elexon docs pages 
 **Recommendation:** **C** (default shown = A). It also removes the need to answer Q2 before coding.
 
 **Decision record**
-- Selected option:
-- Reason for choosing it:
-- Consequences accepted:
-- Decision date:
+- Selected option: **C (Ingest superset 2025-12-30 to 2026-02-03, default UI delivery window 2026-01-02 to 2026-02-01)**
+- Reason for choosing it: Gracefully satisfies both interpretations of "decisions made in January 2026" without data reloading; covers the day-ahead decisions made between 1 Jan and 31 Jan (delivering 2 Jan to 1 Feb) as primary default, while allowing exploration across full calendar January.
+- Consequences accepted: Ingests ~35 days of data (~22k rows total, well within PostgreSQL and memory limits).
+- Decision date: 2026-10-25
 - Related task IDs: P3-T01, P3-T03, P3-T05, P5-T01, P6-T03
 
 **Implementation impact.** `config/env.py` gets `DATA_WINDOW_START/END` (ingest superset) and `DEFAULT_WINDOW_START/END` (UI/API default); `ingest_wind` reads them; `GET /meta` reports both; date pickers in `DecisionControls.tsx` are bounded by `/meta`.

@@ -1,0 +1,63 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: wind_forecast_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: wind_forecast_db
+      POSTGRES_USER: wind_user
+      POSTGRES_PASSWORD: wind_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U wind_user -d wind_forecast_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: wind_forecast_backend
+    restart: unless-stopped
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - ./backend:/app/backend
+    environment:
+      DJANGO_ENV: development
+      DJANGO_DEBUG: "true"
+      DATABASE_URL: postgresql://wind_user:wind_password@db:5432/wind_forecast_db
+      DJANGO_SECRET_KEY: insecure-dev-secret-key-change-in-production-only-placeholder-12345
+      DJANGO_ALLOWED_HOSTS: localhost,127.0.0.1,backend,0.0.0.0
+      ELEXON_BASE_URL: https://data.elexon.co.uk/bmrs/api/v1
+      DEFAULT_CUTOFF_TIME: "11:00"
+      DATA_WINDOW_START: "2025-12-30"
+      DATA_WINDOW_END: "2026-02-03"
+      DEFAULT_WINDOW_START: "2026-01-02"
+      DEFAULT_WINDOW_END: "2026-02-01"
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  frontend:
+    image: node:22-alpine
+    container_name: wind_forecast_frontend
+    working_dir: /app
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    ports:
+      - "3000:3000"
+    environment:
+      VITE_API_BASE_URL: ""
+    command: sh -c "npm install && npm run dev -- --host 0.0.0.0 --port 3000"
+    depends_on:
+      - backend
+
+volumes:
+  pgdata:

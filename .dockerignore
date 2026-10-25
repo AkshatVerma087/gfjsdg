@@ -1,0 +1,33 @@
+# Git & docs
+.git
+.gitignore
+*.docx
+*REint*
+docs/
+scratch/
+
+# Python artifacts & virtual environments
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+*.sqlite3
+venv/
+.venv/
+env/
+
+# Node & Frontend artifacts
+node_modules/
+frontend/node_modules/
+frontend/dist/
+frontend/build/
+.vite/
+npm-debug.log*
+
+# Secrets & Environment files
+.env
+.env.*
+!.env.example

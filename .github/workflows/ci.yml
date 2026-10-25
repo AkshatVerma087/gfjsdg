@@ -1,0 +1,102 @@
+name: CI Quality Gate
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  backend:
+    name: Backend Lint & Tests
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: wind_forecast_db
+          POSTGRES_USER: wind_user
+          POSTGRES_PASSWORD: wind_password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install ruff pytest pytest-django psycopg[binary] whitenoise respx numpy django-ninja
+          pip install -e ./backend
+
+      - name: Check code formatting & linting
+        run: |
+          cd backend
+          ruff check .
+          ruff format --check .
+
+      - name: Run Django system check
+        env:
+          DJANGO_ENV: development
+          DJANGO_SECRET_KEY: ci-test-secret-key-placeholder-at-least-50-characters-long
+          DATABASE_URL: postgresql://wind_user:wind_password@localhost:5432/wind_forecast_db
+        run: |
+          cd backend
+          python manage.py check
+
+      - name: Run backend unit tests
+        env:
+          DJANGO_ENV: test
+          DJANGO_SECRET_KEY: ci-test-secret-key-placeholder-at-least-50-characters-long
+          DATABASE_URL: postgresql://wind_user:wind_password@localhost:5432/wind_forecast_db
+        run: |
+          cd backend
+          pytest -q
+
+  frontend:
+    name: Frontend Lint & Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: "npm"
+          cache-dependency-path: frontend/package.json
+
+      - name: Install dependencies
+        run: |
+          cd frontend
+          npm install
+
+      - name: Run ESLint
+        run: |
+          cd frontend
+          npm run lint
+
+      - name: Run Vitest unit tests
+        run: |
+          cd frontend
+          npm test
+
+      - name: Build production bundle
+        run: |
+          cd frontend
+          npm run build

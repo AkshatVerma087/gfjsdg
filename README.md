@@ -1,6 +1,6 @@
 # Wind Forecast Monitor (UK Day-Ahead)
 
-[![CI](https://github.com/AkshatVerma087/assignment-gridbricks/actions/workflows/ci.yml/badge.svg)](https://github.com/AkshatVerma087/assignment-gridbricks/actions/workflows/ci.yml)
+[![CI](https://github.com/AkshatVerma087/gfjsdg/actions/workflows/ci.yml/badge.svg)](https://github.com/AkshatVerma087/gfjsdg/actions/workflows/ci.yml)
 [![Python](https://img.shields.io/badge/Python-3.12-blue.svg)](https://www.python.org/)
 [![Django](https://img.shields.io/badge/Django-5.1-green.svg)](https://www.djangoproject.com/)
 [![React](https://img.shields.io/badge/React-19-cyan.svg)](https://react.dev/)
@@ -30,7 +30,9 @@ In the Great Britain (GB) power market:
 - **Auction Gate Closure**: Day-ahead power auctions on EPEX SPOT and Nord Pool N2EX close at **11:00 GMT** on day D-1.
 - **Trading Desk Workflow**: Procurement positions are finalized between 10:00 and 10:55 GMT. Forecasts published after 11:00 GMT on D-1 are irrelevant for the day-ahead auction.
 - **As-Of Selection**: For each target half-hour $t$ on delivery day $D$, the system queries the latest record where:
-  $$\text{publish\_time} \le \text{datetime}(D - 1, \text{cutoff\_time})$$
+  ```sql
+  publish_time <= datetime(D - 1, cutoff_time)
+  ```
 
 ---
 
@@ -93,8 +95,8 @@ In the Great Britain (GB) power market:
 
 1. **Clone repository**:
    ```bash
-   git clone https://github.com/AkshatVerma087/assignment-gridbricks.git
-   cd assignment-gridbricks
+   git clone https://github.com/AkshatVerma087/gfjsdg.git
+   cd gfjsdg
    ```
 
 2. **Backend setup**:

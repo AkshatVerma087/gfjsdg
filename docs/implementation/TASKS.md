@@ -11,7 +11,7 @@
 | Phase | Name | Tasks | Done | Status |
 |---|---|---|---|---|
 | 0 | Requirements, domain research, decisions | 3 | 0 | NOT_STARTED |
-| 1 | Foundation & dev environment | 7 | 0 | NOT_STARTED |
+| 1 | Foundation & dev environment | 7 | 1 | IN_PROGRESS |
 | 2 | Backend core infrastructure | 4 | 0 | NOT_STARTED |
 | 3 | Data model & Elexon ingestion | 5 | 0 | NOT_STARTED |
 | 4 | Domain logic (as-of forecast, accuracy metrics) | 5 | 0 | NOT_STARTED |
@@ -19,7 +19,7 @@
 | 6 | Frontend | 6 | 0 | NOT_STARTED |
 | 7 | Quality & security hardening | 3 | 0 | NOT_STARTED |
 | 8 | Deploy, docs, video, submission | 7 | 0 | NOT_STARTED |
-| | **Total** | **45** | **0** | |
+| | **Total** | **45** | **1** | |
 
 **How to update this file**
 1. Change a task's checkbox (`[ ]` → `[x]`) *and* its `Status:` line together (`NOT_STARTED` → `IN_PROGRESS` → `DONE`). Mark `DONE` only after the task's *Verify* step passes.
@@ -133,7 +133,7 @@ Task block format: **Status** · **Priority** (P0 must-have, P1 should-have, P2 
 ### Phase 1 — Foundation & development environment
 
 #### P1-T01 — Create anonymous repo and monorepo skeleton
-- [ ] **Status:** IN_PROGRESS · **Priority:** P0 · **Effort:** XS · **Depends on:** P0-T01 · **Decisions:** —
+- [x] **Status:** DONE · **Priority:** P0 · **Effort:** XS · **Depends on:** P0-T01 · **Decisions:** —
 - **What:** New public GitHub repo with a random-string name; folders `backend/`, `frontend/`, `docs/implementation/`; `.gitignore` (Python, Node, `.env`, build output). Set git author to a non-identifying name/email for this repo.
 - **Why / outcome:** Brief requires an anonymous public repo; set it up correctly before the first commit (history is hard to scrub).
 - **Acceptance:** Repo name and `git log` author contain nothing identifying; `.env` is ignored; planning files committed.
